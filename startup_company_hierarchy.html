@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: transparent;
+    padding: 24px 16px;
+    color: #1a1a2e;
+  }
+  h2.sr-only {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;
+  }
+  .chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* Connector lines */
+  .connector-v {
+    width: 2px;
+    height: 24px;
+    background: #cbd5e1;
+  }
+  .connector-h-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .h-line {
+    height: 2px;
+    background: #cbd5e1;
+    width: 80%;
+    max-width: 700px;
+  }
+  .branch-row {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    max-width: 700px;
+  }
+  .branch-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+  .branch-col .connector-v { height: 20px; }
+
+  /* Cards */
+  .card {
+    border-radius: 10px;
+    padding: 10px 16px;
+    text-align: center;
+    position: relative;
+    min-width: 130px;
+    max-width: 160px;
+  }
+  .card .role {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .card .desc {
+    font-size: 10.5px;
+    margin-top: 3px;
+    opacity: 0.75;
+    line-height: 1.3;
+  }
+  .card .count {
+    font-size: 10px;
+    margin-top: 4px;
+    font-weight: 600;
+    opacity: 0.6;
+    letter-spacing: 0.3px;
+  }
+
+  /* Tier colors */
+  .tier-exec    { background: #1e293b; color: #f8fafc; }
+  .tier-lead    { background: #334155; color: #f1f5f9; }
+  .tier-product { background: #7c3aed; color: #fff; }
+  .tier-fe      { background: #2563eb; color: #fff; }
+  .tier-be      { background: #0284c7; color: #fff; }
+  .tier-api     { background: #0891b2; color: #fff; }
+  .tier-devops  { background: #0d9488; color: #fff; }
+  .tier-qa      { background: #059669; color: #fff; }
+  .tier-data    { background: #d97706; color: #fff; }
+  .tier-mkt     { background: #dc2626; color: #fff; }
+  .tier-sales   { background: #b91c1c; color: #fff; }
+  .tier-support { background: #9d174d; color: #fff; }
+  .tier-hr      { background: #6b21a8; color: #fff; }
+
+  /* Section labels */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 6px;
+    margin-top: 2px;
+  }
+
+  /* Department groups */
+  .dept-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
+    padding: 0 8px;
+  }
+  .dept-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .dept-group {
+    border: 1.5px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    padding: 14px 10px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.5);
+    min-width: 155px;
+  }
+  .dept-title {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 2px;
+  }
+  .dept-group .card {
+    width: 100%;
+    max-width: 180px;
+  }
+
+  /* Wide section for engineering */
+  .eng-section {
+    border: 1.5px solid #bfdbfe;
+    border-radius: 16px;
+    padding: 16px 14px 12px;
+    background: rgba(239,246,255,0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 800px;
+  }
+  .eng-section .dept-title {
+    color: #1d4ed8;
+    font-size: 11px;
+  }
+  .eng-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* Bigger card for CEO */
+  .card-ceo {
+    min-width: 160px;
+    padding: 14px 20px;
+  }
+  .card-ceo .role { font-size: 15px; }
+</style>
+</head>
+<body>
+<h2 class="sr-only">Startup Company Organizational Hierarchy — from CEO down through Engineering, Product, Business, and Support departments</h2>
+
+<div class="chart">
+
+  <!-- LEVEL 1: CEO -->
+  <div class="section-label">Executive</div>
+  <div class="card tier-exec card-ceo">
+    <div class="role">👑 CEO / Co-Founder</div>
+    <div class="desc">Vision, strategy & fundraising</div>
+    <div class="count">1 person</div>
+  </div>
+
+  <div class="connector-v"></div>
+
+  <!-- LEVEL 2: C-Suite -->
+  <div class="section-label">Leadership</div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+    <div class="dept-block">
+      <div class="card tier-lead">
+        <div class="role">⚙️ CTO</div>
+        <div class="desc">Tech & engineering lead</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+    <div class="dept-block">
+      <div class="card tier-lead">
+        <div class="role">📦 COO</div>
+        <div class="desc">Operations & process</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+    <div class="dept-block">
+      <div class="card tier-lead">
+        <div class="role">💼 CMO</div>
+        <div class="desc">Marketing & growth</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector-v"></div>
+
+  <!-- LEVEL 3: Engineering (wide block) -->
+  <div class="eng-section">
+    <div class="dept-title">🛠️ Engineering Department</div>
+    <div class="eng-row">
+
+      <div class="dept-block">
+        <div class="card tier-fe">
+          <div class="role">🖥️ Frontend Dev</div>
+          <div class="desc">React / Vue / UI</div>
+          <div class="count">1–2 people</div>
+        </div>
+      </div>
+
+      <div class="dept-block">
+        <div class="card tier-be">
+          <div class="role">🗄️ Backend Dev</div>
+          <div class="desc">Node / Python / Java</div>
+          <div class="count">1–2 people</div>
+        </div>
+      </div>
+
+      <div class="dept-block">
+        <div class="card tier-api">
+          <div class="role">🔗 API Engineer</div>
+          <div class="desc">REST / GraphQL / integrations</div>
+          <div class="count">1 person</div>
+        </div>
+      </div>
+
+      <div class="dept-block">
+        <div class="card tier-devops">
+          <div class="role">☁️ DevOps / Infra</div>
+          <div class="desc">CI/CD, AWS, Docker</div>
+          <div class="count">1 person</div>
+        </div>
+      </div>
+
+      <div class="dept-block">
+        <div class="card tier-qa">
+          <div class="role">🧪 QA Engineer</div>
+          <div class="desc">Testing & quality</div>
+          <div class="count">1 person</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector-v"></div>
+
+  <!-- LEVEL 4: Product + Data -->
+  <div class="dept-row">
+
+    <div class="dept-group">
+      <div class="dept-title">🎨 Product & Design</div>
+      <div class="card tier-product">
+        <div class="role">📋 Product Manager</div>
+        <div class="desc">Roadmap & sprints</div>
+        <div class="count">1 person</div>
+      </div>
+      <div class="card tier-product" style="background:#6d28d9;">
+        <div class="role">🎨 UI/UX Designer</div>
+        <div class="desc">Figma, user flows</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+
+    <div class="dept-group">
+      <div class="dept-title">📊 Data</div>
+      <div class="card tier-data">
+        <div class="role">📈 Data Analyst</div>
+        <div class="desc">Metrics, dashboards</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="connector-v"></div>
+
+  <!-- LEVEL 5: Business -->
+  <div class="dept-row">
+
+    <div class="dept-group">
+      <div class="dept-title">📣 Marketing</div>
+      <div class="card tier-mkt">
+        <div class="role">📣 Marketing Lead</div>
+        <div class="desc">SEO, content, ads</div>
+        <div class="count">1 person</div>
+      </div>
+      <div class="card tier-mkt" style="background:#ef4444;">
+        <div class="role">✍️ Content Writer</div>
+        <div class="desc">Blog, social, copy</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+
+    <div class="dept-group">
+      <div class="dept-title">💰 Sales</div>
+      <div class="card tier-sales">
+        <div class="role">🤝 Sales Rep</div>
+        <div class="desc">Outreach, demos, deals</div>
+        <div class="count">1–2 people</div>
+      </div>
+    </div>
+
+    <div class="dept-group">
+      <div class="dept-title">🎧 Customer Support</div>
+      <div class="card tier-support">
+        <div class="role">🎧 Support Agent</div>
+        <div class="desc">Tickets, chat, onboarding</div>
+        <div class="count">1 person</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="connector-v"></div>
+
+  <!-- LEVEL 6: HR/Admin -->
+  <div class="section-label">Admin & People</div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+    <div class="card tier-hr">
+      <div class="role">🧑‍💼 HR / People Ops</div>
+      <div class="desc">Hiring, culture, payroll</div>
+      <div class="count">1 person (part-time early)</div>
+    </div>
+    <div class="card tier-hr" style="background:#7e22ce;">
+      <div class="role">⚖️ Legal / Finance</div>
+      <div class="desc">Contracts, accounting</div>
+      <div class="count">Outsourced / contractor</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div style="margin-top:28px; padding-top:16px; border-top:1px solid #e2e8f0; width:100%; text-align:center;">
+    <div style="font-size:11px; color:#94a3b8; font-weight:600; letter-spacing:0.5px;">TOTAL HEADCOUNT (SMALL SCALE)</div>
+    <div style="font-size:13px; color:#475569; margin-top:6px;">~15–20 people · Full-time core + contractors for legal/finance</div>
+  </div>
+
+</div>
+</body>
+</html>

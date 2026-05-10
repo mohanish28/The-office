@@ -1,0 +1,70 @@
+<h2>What should this project become?</h2>
+<p class="subtitle">Pick the scope for the NVIDIA AI office. This decides how detailed the architecture, fine-tuning, API key handling, and approval hierarchy plan should be.</p>
+
+<div class="cards">
+  <div class="card" data-choice="visual-map" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Static Visual System</div>
+        <div class="mockup-body">
+          <div class="mock-nav">Owner / CEO</div>
+          <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px;">
+            <div class="placeholder">CTO Reviewer</div>
+            <div class="placeholder">Senior Lead + Product Manager</div>
+            <div class="placeholder">Worker Model Departments</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Visual hierarchy only</h3>
+      <p>Improve the HTML pages into a polished explainer: org chart, model assignments, review flow, and fine-tuning roadmap. Fastest path.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="prototype" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Working Prototype</div>
+        <div class="mockup-body">
+          <div class="mock-nav">Task Intake</div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <div class="mock-sidebar">Agents</div>
+            <div class="mock-content">Draft -> Review -> Owner Approval</div>
+          </div>
+          <button class="mock-button">Run Office Workflow</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Interactive agent office</h3>
+      <p>Build a local app that uses NVIDIA API keys, routes tasks to model roles, records reviews, and requires your final approval. Best first build.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="production" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="mockup">
+        <div class="mockup-header">Production Platform</div>
+        <div class="mockup-body">
+          <div class="mock-nav">Auth + Workspace + Audit Logs</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+            <div class="placeholder">Queue</div>
+            <div class="placeholder">NVIDIA NIM</div>
+            <div class="placeholder">Vector DB</div>
+            <div class="placeholder">Fine-tune Jobs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Production system</h3>
+      <p>Add accounts, queues, persistence, deployment, monitoring, cost controls, and a formal fine-tuning pipeline. Most powerful, slower.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>My recommendation</h3>
+  <p>Start with B: a working interactive prototype. It proves the office hierarchy, API key flow, review gates, and owner approval loop before spending time on production infrastructure.</p>
+</div>

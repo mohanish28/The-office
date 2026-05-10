@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { box-sizing: border-box; margin:0; padding:0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0a0a0f;
+  color: #e2e8f0;
+  padding: 20px 16px 40px;
+  min-height: 100vh;
+}
+h2.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+.title {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.title h1 {
+  font-size: 20px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #76b900, #00d4ff, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
+}
+.title p {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Tab navigation */
+.tabs {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.tab {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid #1e293b;
+  background: #0f172a;
+  color: #64748b;
+  transition: all 0.2s;
+}
+.tab.active {
+  border-color: #76b900;
+  background: rgba(118,185,0,0.12);
+  color: #76b900;
+}
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* --- PANEL 1: ORG CHART --- */
+.org {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.level-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #475569;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+
+.connector { width: 2px; height: 22px; background: #1e293b; }
+.connector-green { background: linear-gradient(180deg, #76b900, #00d4ff); }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+.node {
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-align: center;
+  min-width: 140px;
+  max-width: 175px;
+  border: 1.5px solid transparent;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.node:hover { transform: translateY(-2px); }
+
+.node .emoji { font-size: 18px; margin-bottom: 3px; }
+.node .role { font-size: 12px; font-weight: 700; line-height: 1.2; }
+.node .model { font-size: 10px; margin-top: 4px; opacity: 0.8; font-family: monospace; }
+.node .badge { font-size: 9px; margin-top: 5px; padding: 2px 7px; border-radius: 10px; display: inline-block; font-weight: 600; }
+
+/* Node themes */
+.node-owner  { background: linear-gradient(135deg,#1a0a3e,#0d0a1e); border-color: #a855f7; }
+.node-cto    { background: linear-gradient(135deg,#052e16,#0a1a0a); border-color: #76b900; }
+.node-senior { background: linear-gradient(135deg,#0c1a2e,#051a2e); border-color: #00d4ff; }
+.node-eng    { background: #0f172a; border-color: #1e3a5f; }
+.node-product{ background: #1a0f2e; border-color: #4c1d95; }
+.node-qa     { background: #1a1505; border-color: #854d0e; }
+.node-data   { background: #1a1505; border-color: #92400e; }
+.node-review { background: #1a0a0a; border-color: #7f1d1d; }
+
+.badge-free  { background: rgba(118,185,0,0.15); color: #86efac; }
+.badge-dl    { background: rgba(0,212,255,0.1); color: #67e8f9; }
+.badge-top   { background: rgba(168,85,247,0.2); color: #d8b4fe; }
+.badge-owner { background: rgba(168,85,247,0.3); color: #e9d5ff; }
+
+/* Approval flow arrow */
+.approve-flow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(118,185,0,0.08);
+  border-radius: 20px;
+  border: 1px solid rgba(118,185,0,0.2);
+  font-size: 10px;
+  color: #76b900;
+  font-weight: 600;
+}
+
+/* --- PANEL 2: APPROVAL FLOW --- */
+.flow-grid {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.flow-step {
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid #1e293b;
+  background: #0f172a;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.flow-step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #76b900, #00d4ff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #000; flex-shrink: 0;
+}
+.flow-step-content { flex: 1; }
+.flow-step-title { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+.flow-step-desc { font-size: 11px; color: #64748b; margin-top: 3px; line-height: 1.5; }
+.flow-step-model { font-size: 10px; font-family: monospace; color: #76b900; margin-top: 5px; }
+
+.flow-arrow {
+  text-align: center;
+  font-size: 18px;
+  color: #1e3a5f;
+}
+.flow-approve {
+  text-align: center;
+  padding: 8px;
+  background: rgba(118,185,0,0.08);
+  border-radius: 8px;
+  border: 1px dashed rgba(118,185,0,0.3);
+  font-size: 11px;
+  color: #76b900;
+}
+.flow-reject {
+  text-align: center;
+  padding: 6px;
+  font-size: 10px;
+  color: #ef4444;
+}
+
+/* --- PANEL 3: MODELS TABLE --- */
+.models-table { max-width: 820px; margin: 0 auto; }
+.model-row {
+  border-radius: 10px;
+  border: 1.5px solid #1e293b;
+  background: #0f172a;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 36px 1fr 1fr 110px;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.2s;
+  cursor: default;
+}
+.model-row:hover { border-color: #334155; }
+.model-emoji { font-size: 20px; text-align: center; }
+.model-name { font-size: 12px; font-weight: 700; color: #f1f5f9; }
+.model-id { font-size: 10px; font-family: monospace; color: #76b900; margin-top: 2px; }
+.model-task { font-size: 11px; color: #94a3b8; }
+.model-params { font-size: 10px; color: #64748b; }
+.model-badge-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 3px; }
+.mbadge {
+  font-size: 9px; padding: 1px 6px; border-radius: 8px; font-weight: 600;
+  background: rgba(0,212,255,0.1); color: #67e8f9;
+}
+.mbadge.g { background: rgba(118,185,0,0.12); color: #86efac; }
+.mbadge.p { background: rgba(168,85,247,0.1); color: #d8b4fe; }
+.mbadge.o { background: rgba(249,115,22,0.1); color: #fdba74; }
+
+/* --- PANEL 4: FINE-TUNE --- */
+.ft-grid { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.ft-card {
+  border-radius: 12px;
+  border: 1.5px solid #1e293b;
+  background: #0f172a;
+  padding: 14px 16px;
+}
+.ft-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.ft-emoji { font-size: 18px; }
+.ft-role { font-size: 13px; font-weight: 700; color: #f1f5f9; }
+.ft-model-id { font-size: 10px; font-family: monospace; color: #76b900; }
+.ft-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.ft-col-title { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; color: #475569; text-transform: uppercase; margin-bottom: 4px; }
+.ft-col-val { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+
+.section-head {
+  font-size: 11px; font-weight: 700; color: #64748b;
+  letter-spacing: 1px; text-transform: uppercase;
+  text-align: center; margin: 16px 0 8px;
+}
+
+/* Tooltip */
+.tooltip-box {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+  padding: 10px 16px; font-size: 11.5px; color: #e2e8f0;
+  max-width: 340px; text-align: center; z-index: 100;
+  display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+</style>
+</head>
+<body>
+<h2 class="sr-only">NVIDIA AI Office — LLM models assigned to company roles with approval hierarchy and fine-tuning plans</h2>
+
+<div class="title">
+  <h1>⚡ Your AI Office — Powered by NVIDIA NIM</h1>
+  <p>Real NVIDIA models · Role-specific fine-tuning · Approval hierarchy</p>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('org')">🏢 Org Chart</div>
+  <div class="tab" onclick="showTab('flow')">🔄 Approval Flow</div>
+  <div class="tab" onclick="showTab('models')">🤖 Model Assignments</div>
+  <div class="tab" onclick="showTab('finetune')">🎯 Fine-Tuning Plan</div>
+</div>
+
+<!-- ==================== TAB 1: ORG CHART ==================== -->
+<div class="panel active" id="tab-org">
+<div class="org">
+
+  <div class="level-label">👑 Owner — You</div>
+  <div class="node node-owner" onclick="tip('You are the CEO. You give final business approval. No model output reaches production without your sign-off.')">
+    <div class="emoji">👑</div>
+    <div class="role">YOU — Owner / CEO</div>
+    <div class="model">Business Approval Gate</div>
+    <span class="badge badge-owner">Final Authority</span>
+  </div>
+
+  <div class="connector connector-green"></div>
+  <div class="approve-flow">⬆ All output reviewed before reaching you</div>
+  <div class="connector connector-green"></div>
+
+  <div class="level-label">🧠 Level 1 — CTO Agent (Top Reviewer)</div>
+  <div class="node node-cto" onclick="tip('nemotron-3-super-120b-a12b: 120B hybrid Mamba-Transformer. 1M token context. Best NVIDIA model for agentic reasoning, planning & code review. Reviews all technical output before it reaches you.')">
+    <div class="emoji">🧠</div>
+    <div class="role">CTO Agent</div>
+    <div class="model">nemotron-3-super-120b-a12b</div>
+    <span class="badge badge-free">Top Reviewer · 1M ctx</span>
+  </div>
+
+  <div class="connector"></div>
+  <div class="approve-flow">⬆ Reviewed by CTO before escalating</div>
+  <div class="connector"></div>
+
+  <div class="level-label">⚡ Level 2 — Senior Engineering Lead</div>
+  <div class="row">
+    <div class="node node-senior" onclick="tip('kimi-k2.6: 1T multimodal MoE. Handles long-horizon coding, agentic tool use, and vision. Acts as Senior Full-Stack Lead who reviews all dev output.')">
+      <div class="emoji">⚡</div>
+      <div class="role">Senior Engineer Lead</div>
+      <div class="model">kimi-k2.6</div>
+      <span class="badge badge-dl">1T MoE · Multimodal</span>
+    </div>
+    <div class="node node-product" onclick="tip('minimax-m2.7: 230B MoE. Excels in reasoning, office tasks, and planning. Acts as Product Manager — writes specs, reviews requirements, prioritizes backlog.')">
+      <div class="emoji">📋</div>
+      <div class="role">Product Manager</div>
+      <div class="model">minimax-m2.7</div>
+      <span class="badge badge-dl">230B · Office + Reasoning</span>
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- Engineering block -->
+  <div class="level-label">🛠️ Level 3 — Engineering Department</div>
+  <div style="border:1.5px solid #1e3a5f; border-radius:16px; padding:14px 12px; background:rgba(0,30,60,0.3); max-width:800px; width:100%;">
+    <div style="font-size:10px; font-weight:800; color:#00d4ff; letter-spacing:1px; text-transform:uppercase; text-align:center; margin-bottom:10px;">⚙️ Engineering Dept</div>
+    <div class="row">
+
+      <div class="node node-eng" onclick="tip('deepseek-v4-flash: 284B MoE, 1M context. Optimized for FAST frontend coding, React/Vue components. Best speed-to-quality for UI work.')">
+        <div class="emoji">🖥️</div>
+        <div class="role">Frontend Dev</div>
+        <div class="model">deepseek-v4-flash</div>
+        <span class="badge badge-dl">284B · Fast UI</span>
+      </div>
+
+      <div class="node node-eng" onclick="tip('deepseek-v4-pro: Scales to 1M context. Deep reasoning for complex backend logic, databases, server architecture. Best for Node/Python/Java backends.')">
+        <div class="emoji">🗄️</div>
+        <div class="role">Backend Dev</div>
+        <div class="model">deepseek-v4-pro</div>
+        <span class="badge badge-dl">1M ctx · Deep Logic</span>
+      </div>
+
+      <div class="node node-eng" onclick="tip('glm-5.1: Flagship agentic model for tool use and long-horizon tasks. Perfect for REST/GraphQL API design and third-party integrations.')">
+        <div class="emoji">🔗</div>
+        <div class="role">API Engineer</div>
+        <div class="model">glm-5.1</div>
+        <span class="badge badge-dl">Agentic · Tool Use</span>
+      </div>
+
+      <div class="node node-eng" onclick="tip('mistral-medium-3.5: High-performing for text, coding and agentic tasks. Great for writing Dockerfiles, CI/CD configs, infra-as-code (Terraform, K8s).')">
+        <div class="emoji">☁️</div>
+        <div class="role">DevOps / Infra</div>
+        <div class="model">mistral-medium-3.5</div>
+        <span class="badge badge-dl">128B · Agentic</span>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="connector"></div>
+
+  <!-- QA + Data block -->
+  <div class="level-label">🔍 Level 4 — Quality & Data</div>
+  <div class="row">
+
+    <div style="border:1.5px solid #854d0e; border-radius:14px; padding:12px 10px; background:rgba(30,20,0,0.4); display:flex; flex-direction:column; align-items:center; gap:8px;">
+      <div style="font-size:10px;font-weight:800;color:#f59e0b;letter-spacing:1px;text-transform:uppercase;">🧪 QA Pipeline</div>
+      <div class="node node-qa" onclick="tip('mistral-small-4: 119B hybrid MoE with reasoning. Writes unit tests, integration tests, and reviews code for logic bugs before QA-safety check.')">
+        <div class="emoji">✅</div>
+        <div class="role">QA Engineer</div>
+        <div class="model">mistral-small-4-119b</div>
+        <span class="badge badge-dl">Logic Testing</span>
+      </div>
+      <div class="node node-review" onclick="tip('nemotron-3-content-safety: Multilingual multimodal safety model. Scans all outputs for unsafe content, hallucinations, policy violations before passing up.')">
+        <div class="emoji">🛡️</div>
+        <div class="role">Safety Reviewer</div>
+        <div class="model">nemotron-3-content-safety</div>
+        <span class="badge badge-free">Free · Safety Gate</span>
+      </div>
+    </div>
+
+    <div style="border:1.5px solid #92400e; border-radius:14px; padding:12px 10px; background:rgba(30,15,0,0.4); display:flex; flex-direction:column; align-items:center; gap:8px;">
+      <div style="font-size:10px;font-weight:800;color:#f97316;letter-spacing:1px;text-transform:uppercase;">📊 Data Dept</div>
+      <div class="node node-data" onclick="tip('nemotron-ocr-v1: Powerful OCR for extracting text, tables, and structured data from documents. Feeds cleaned data to backend and analytics.')">
+        <div class="emoji">🔍</div>
+        <div class="role">Data Extractor</div>
+        <div class="model">nemotron-ocr-v1</div>
+        <span class="badge badge-free">OCR · Tables</span>
+      </div>
+      <div class="node node-data" onclick="tip('llama-nemotron-rerank-vl-1b-v2: Retrieval reranker. Scores passages for relevance. Powers your internal RAG system and knowledge search.')">
+        <div class="emoji">📈</div>
+        <div class="role">RAG / Search</div>
+        <div class="model">llama-nemotron-rerank-vl</div>
+        <span class="badge badge-dl">RAG · Reranker</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<!-- ==================== TAB 2: APPROVAL FLOW ==================== -->
+<div class="panel" id="tab-flow">
+<div class="flow-grid">
+  <div class="section-head">How work moves through your AI office</div>
+
+  <div class="flow-step">
+    <div class="flow-step-num">1</div>
+    <div class="flow-step-content">
+      <div class="flow-step-title">🗂️ Task Created by Product Manager</div>
+      <div class="flow-step-desc">PM Agent receives the goal and breaks it into a structured spec: acceptance criteria, edge cases, API contracts. No code is written until the spec is approved by Senior Lead.</div>
+      <div class="flow-step-model">minimax-m2.7 → outputs: spec document</div>
+    </div>
+  </div>
+  <div class="flow-arrow">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-step-num">2</div>
+    <div class="flow-step-content">
+      <div class="flow-step-title">🛠️ Workers Execute in Parallel</div>
+      <div class="flow-step-desc">Frontend Dev writes React components. Backend Dev writes server logic. API Engineer writes endpoints. DevOps writes infra config. All work in parallel on their piece of the spec.</div>
+      <div class="flow-step-model">deepseek-v4-flash · deepseek-v4-pro · glm-5.1 · mistral-medium-3.5</div>
+    </div>
+  </div>
+  <div class="flow-arrow">↓</div>
+
+  <div class="flow-step">
+    <div class="flow-step-num">3</div>
+    <div class="flow-step-content">
+      <div class="flow-step-title">🧪 QA + Safety Gate</div>
+      <div class="flow-step-desc">QA Engineer runs logic/unit tests and checks for bugs. Safety Reviewer scans for policy violations, hallucinations, or harmful content. ❌ If either fails → sent back to Level 3 with feedback. ✅ If both pass → escalates.</div>
+      <div class="flow-step-model">mistral-small-4 + nemotron-3-content-safety</div>
+    </div>
+  </div>
+  <div class="flow-reject">↩ REJECTED? Worker gets feedback and revises (max 3 iterations)</div>
+  <div class="flow-arrow">↓ if APPROVED</div>
+
+  <div class="flow-step">
+    <div class="flow-step-num">4</div>
+    <div class="flow-step-content">
+      <div class="flow-step-title">⚡ Senior Engineer Lead Reviews</div>
+      <div class="flow-step-desc">kimi-k2.6 does a holistic code review: architecture quality, performance issues, integration consistency, and whether it matches the PM spec. Can request specific changes before escalating.</div>
+      <div class="flow-step-model">kimi-k2.6 → verdict: APPROVE / REVISE</div>
+    </div>
+  </div>
+  <div class="flow-reject">↩ REVISE? Specific file sent back to responsible worker</div>
+  <div class="flow-arrow">↓ if APPROVED</div>
+
+  <div class="flow-step">
+    <div class="flow-step-num">5</div>
+    <div class="flow-step-content">
+      <div class="flow-step-title">🧠 CTO Agent — Final Technical Review</div>
+      <div class="flow-step-desc">Nemotron Super reads the entire codebase with its 1M token context. Checks system-level concerns: scalability, security, tech debt, API contracts. Writes a review report before escalating to you.</div>
+      <div class="flow-step-model">nemotron-3-super-120b-a12b → outputs: CTO review report</div>
+    </div>
+  </div>
+  <div class="flow-arrow">↓</div>
+
+  <div class="flow-step" style="border-color:#a855f7;">
+    <div class="flow-step-num" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">6</div>
+    <div class="flow-step-content">
+      <div class="flow-step-title">👑 YOU — Business Approval</div>
+      <div class="flow-step-desc">You receive a clean summary: what was built, the CTO's assessment, test results, and a deploy recommendation. You approve → it ships. You reject → any level can be targeted for revision.</div>
+      <div class="flow-step-model">Human decision gate — no model bypasses this</div>
+    </div>
+  </div>
+
+  <div class="flow-approve">✅ APPROVED by Owner → Deploy via DevOps Agent (mistral-medium-3.5)</div>
+</div>
+</div>
+
+<!-- ==================== TAB 3: MODEL ASSIGNMENTS ==================== -->
+<div class="panel" id="tab-models">
+<div class="models-table">
+
+  <div class="section-head">Click a row to learn why this model fits this role</div>
+
+  <div class="model-row" onclick="tip('NVIDIA flagship. 120B hybrid Mamba-Transformer MoE. 1M token context = can read your ENTIRE codebase at once. Best-in-class for planning, code review, tool calling. Acts as your AI CTO.')">
+    <div class="model-emoji">🧠</div>
+    <div>
+      <div class="model-name">CTO / Top Reviewer</div>
+      <div class="model-id">nvidia/nemotron-3-super-120b-a12b</div>
+    </div>
+    <div class="model-task">
+      Agentic reasoning, code review, planning
+      <div class="model-badge-row"><span class="mbadge g">1M context</span><span class="mbadge">MoE</span><span class="mbadge p">Tool calling</span></div>
+    </div>
+    <div class="model-params">120B (active: 12B)<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('Moonshot Kimi K2.6: 1 TRILLION parameter MoE. Handles images + video + text. Perfect for a Senior Lead who needs to review UI screenshots, read architecture diagrams, and audit full codebases.')">
+    <div class="model-emoji">⚡</div>
+    <div>
+      <div class="model-name">Senior Engineer Lead</div>
+      <div class="model-id">moonshotai/kimi-k2.6</div>
+    </div>
+    <div class="model-task">
+      Long-horizon coding, vision, agentic
+      <div class="model-badge-row"><span class="mbadge">1T MoE</span><span class="mbadge g">Multimodal</span><span class="mbadge p">Agentic</span></div>
+    </div>
+    <div class="model-params">1T params<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('minimax-m2.7: 230B MoE excelling in office tasks and reasoning. Perfect PM: can turn your vague idea into a structured spec, user stories, and acceptance criteria.')">
+    <div class="model-emoji">📋</div>
+    <div>
+      <div class="model-name">Product Manager</div>
+      <div class="model-id">minimaxai/minimax-m2.7</div>
+    </div>
+    <div class="model-task">
+      Specs, planning, office tasks, reasoning
+      <div class="model-badge-row"><span class="mbadge">230B MoE</span><span class="mbadge o">Office</span></div>
+    </div>
+    <div class="model-params">230B params<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('DeepSeek V4 Flash: 284B MoE optimized for SPEED. 1M context. Built for fast code generation. Best frontend dev — pumps out React/Vue components quickly and accurately.')">
+    <div class="model-emoji">🖥️</div>
+    <div>
+      <div class="model-name">Frontend Developer</div>
+      <div class="model-id">deepseek-ai/deepseek-v4-flash</div>
+    </div>
+    <div class="model-task">
+      React, Vue, UI/UX code, fast generation
+      <div class="model-badge-row"><span class="mbadge">284B MoE</span><span class="mbadge g">1M ctx</span><span class="mbadge p">Fast</span></div>
+    </div>
+    <div class="model-params">284B params<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('DeepSeek V4 Pro: 1M context MoE with deep reasoning for complex logic. Perfect backend dev for Node.js, Python, databases, auth systems, and complex business logic.')">
+    <div class="model-emoji">🗄️</div>
+    <div>
+      <div class="model-name">Backend Developer</div>
+      <div class="model-id">deepseek-ai/deepseek-v4-pro</div>
+    </div>
+    <div class="model-task">
+      Node.js, Python, DBs, server architecture
+      <div class="model-badge-row"><span class="mbadge g">1M ctx</span><span class="mbadge">MoE</span><span class="mbadge p">Deep logic</span></div>
+    </div>
+    <div class="model-params">MoE architecture<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('GLM-5.1: Flagship agentic model for long-horizon tasks and tool use. API Engineer needs to call external services, design contracts, and chain API calls — exactly what GLM-5.1 is built for.')">
+    <div class="model-emoji">🔗</div>
+    <div>
+      <div class="model-name">API Engineer</div>
+      <div class="model-id">z-ai/glm-5.1</div>
+    </div>
+    <div class="model-task">
+      REST, GraphQL, tool use, integrations
+      <div class="model-badge-row"><span class="mbadge p">Agentic</span><span class="mbadge g">Tool Use</span><span class="mbadge">Long-horizon</span></div>
+    </div>
+    <div class="model-params">Flagship MoE<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('Mistral Medium 3.5 128B: Strong at coding + agentic tasks. DevOps needs broad skills: writing Dockerfiles, Terraform, GitHub Actions, K8s configs — Mistral handles all of these cleanly.')">
+    <div class="model-emoji">☁️</div>
+    <div>
+      <div class="model-name">DevOps / Infra</div>
+      <div class="model-id">mistralai/mistral-medium-3.5-128b</div>
+    </div>
+    <div class="model-task">
+      Docker, CI/CD, Terraform, K8s configs
+      <div class="model-badge-row"><span class="mbadge">128B</span><span class="mbadge g">Coding</span><span class="mbadge p">Agentic</span></div>
+    </div>
+    <div class="model-params">128B params<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('Mistral Small 4: 119B hybrid MoE with built-in reasoning mode. QA needs to think carefully through test cases, edge cases, and logic errors — reasoning mode is essential here.')">
+    <div class="model-emoji">🧪</div>
+    <div>
+      <div class="model-name">QA Engineer</div>
+      <div class="model-id">mistralai/mistral-small-4-119b-2603</div>
+    </div>
+    <div class="model-task">
+      Unit tests, integration tests, bug detection
+      <div class="model-badge-row"><span class="mbadge g">Reasoning</span><span class="mbadge">119B MoE</span></div>
+    </div>
+    <div class="model-params">119B MoE<br><span style="color:#76b900;font-size:9px;">Downloadable</span></div>
+  </div>
+
+  <div class="model-row" onclick="tip('NVIDIA Content Safety: Purpose-built for detecting unsafe, toxic, or policy-violating content. Sits as a gate between all model outputs and the next level. Free endpoint!')">
+    <div class="model-emoji">🛡️</div>
+    <div>
+      <div class="model-name">Safety Reviewer</div>
+      <div class="model-id">nvidia/nemotron-3-content-safety</div>
+    </div>
+    <div class="model-task">
+      Hallucination, safety, policy checks
+      <div class="model-badge-row"><span class="mbadge g">Free API</span><span class="mbadge">Multilingual</span><span class="mbadge p">Multimodal</span></div>
+    </div>
+    <div class="model-params">NVIDIA native<br><span style="color:#22c55e;font-size:9px;">FREE endpoint</span></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ==================== TAB 4: FINE-TUNING ==================== -->
+<div class="panel" id="tab-finetune">
+<div class="ft-grid">
+
+  <div class="section-head">Fine-tune each model for its specific role using NVIDIA NeMo</div>
+
+  <div class="ft-card">
+    <div class="ft-header">
+      <div class="ft-emoji">🧠</div>
+      <div><div class="ft-role">CTO Agent — nemotron-3-super-120b-a12b</div><div class="ft-model-id">Method: LoRA · Framework: NVIDIA NeMo</div></div>
+    </div>
+    <div class="ft-body">
+      <div><div class="ft-col-title">Training Data</div><div class="ft-col-val">Architecture Decision Records (ADRs), senior code reviews, system design docs, RFC templates</div></div>
+      <div><div class="ft-col-title">Goal</div><div class="ft-col-val">Output structured JSON review reports. Always cite specific line numbers. Use consistent APPROVE/REVISE/REJECT format</div></div>
+      <div><div class="ft-col-title">Key Prompt</div><div class="ft-col-val">System: "You are CTO. Review all code for scalability, security, and spec compliance. Output structured verdict."</div></div>
+    </div>
+  </div>
+
+  <div class="ft-card">
+    <div class="ft-header">
+      <div class="ft-emoji">🖥️</div>
+      <div><div class="ft-role">Frontend Dev — deepseek-v4-flash</div><div class="ft-model-id">Method: SFT (Supervised Fine-Tuning) · Dataset: UI code pairs</div></div>
+    </div>
+    <div class="ft-body">
+      <div><div class="ft-col-title">Training Data</div><div class="ft-col-val">10K+ React/Vue component examples, Figma-to-code pairs, Tailwind CSS examples, accessibility-compliant UI</div></div>
+      <div><div class="ft-col-title">Goal</div><div class="ft-col-val">Always output single-file components. Include PropTypes. Add comments. Follow your company's component naming convention</div></div>
+      <div><div class="ft-col-title">Key Prompt</div><div class="ft-col-val">System: "You are a Frontend Dev. Output clean, accessible React components following [company] style guide."</div></div>
+    </div>
+  </div>
+
+  <div class="ft-card">
+    <div class="ft-header">
+      <div class="ft-emoji">🗄️</div>
+      <div><div class="ft-role">Backend Dev — deepseek-v4-pro</div><div class="ft-model-id">Method: LoRA · Dataset: API + DB patterns</div></div>
+    </div>
+    <div class="ft-body">
+      <div><div class="ft-col-title">Training Data</div><div class="ft-col-val">REST API implementations, PostgreSQL/MongoDB schemas, auth flows (JWT/OAuth), error handling patterns</div></div>
+      <div><div class="ft-col-title">Goal</div><div class="ft-col-val">Always include input validation, error codes, logging. Follow your specific DB schema conventions and naming</div></div>
+      <div><div class="ft-col-title">Key Prompt</div><div class="ft-col-val">System: "You are a Backend Dev. Write Node.js/Python APIs that are secure, validated, and production-ready."</div></div>
+    </div>
+  </div>
+
+  <div class="ft-card">
+    <div class="ft-header">
+      <div class="ft-emoji">🔗</div>
+      <div><div class="ft-role">API Engineer — glm-5.1</div><div class="ft-model-id">Method: P-Tuning · Dataset: OpenAPI specs + integration docs</div></div>
+    </div>
+    <div class="ft-body">
+      <div><div class="ft-col-title">Training Data</div><div class="ft-col-val">OpenAPI 3.0 spec examples, Postman collections, webhook patterns, OAuth flows, SDK wrappers</div></div>
+      <div><div class="ft-col-title">Goal</div><div class="ft-col-val">Always generate OpenAPI spec + implementation together. Follow versioning conventions. Include retry logic</div></div>
+      <div><div class="ft-col-title">Key Prompt</div><div class="ft-col-val">System: "You are an API Engineer. Design and implement REST/GraphQL endpoints with full OpenAPI documentation."</div></div>
+    </div>
+  </div>
+
+  <div class="ft-card">
+    <div class="ft-header">
+      <div class="ft-emoji">🧪</div>
+      <div><div class="ft-role">QA Engineer — mistral-small-4-119b</div><div class="ft-model-id">Method: SFT · Dataset: Test suites + bug reports</div></div>
+    </div>
+    <div class="ft-body">
+      <div><div class="ft-col-title">Training Data</div><div class="ft-col-val">Jest/Pytest test files, Cypress E2E tests, bug report templates, edge case catalogs</div></div>
+      <div><div class="ft-col-title">Goal</div><div class="ft-col-val">Output: (1) unit tests (2) edge case list (3) verdict PASS/FAIL with specific failure reasons</div></div>
+      <div><div class="ft-col-title">Key Prompt</div><div class="ft-col-val">System: "You are a QA Engineer. Review code and write comprehensive tests. Output a structured test report."</div></div>
+    </div>
+  </div>
+
+  <div style="background:rgba(118,185,0,0.06); border:1.5px solid rgba(118,185,0,0.2); border-radius:12px; padding:14px 16px; text-align:center;">
+    <div style="font-size:12px; font-weight:700; color:#76b900; margin-bottom:6px;">🛠️ Fine-Tuning Stack</div>
+    <div style="font-size:11px; color:#94a3b8; line-height:1.8;">
+      <b style="color:#e2e8f0;">Framework:</b> NVIDIA NeMo + NIM microservices &nbsp;|&nbsp;
+      <b style="color:#e2e8f0;">Methods:</b> LoRA · SFT · P-Tuning<br>
+      <b style="color:#e2e8f0;">Infra:</b> NVIDIA A100/H100 GPU · NGC containers<br>
+      <b style="color:#e2e8f0;">Deploy:</b> Each fine-tuned model → NIM endpoint → called via OpenAI-compatible API
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip-box" id="tooltip"></div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+function tip(msg) {
+  const t = document.getElementById('tooltip');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(window._tipTimer);
+  window._tipTimer = setTimeout(() => { t.style.display = 'none'; }, 5000);
+}
+</script>
+</body>
+</html>
