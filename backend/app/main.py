@@ -21,3 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(auth_router, prefix="/api")
+
+
+@app.get("/health")
+async def health():
+    return {"status": "ok", "service": "ai-office-backend"}
