@@ -1,12 +1,24 @@
+import os
+
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret")
+os.environ.setdefault("NIM_API_KEY", "nvapi-test")
+os.environ.setdefault("NIM_API_KEY_ENCRYPTION_KEY", "ZmFrZS1mZXJuZXQta2V5LW11c3QtYmUtMzJieXRlcz0=")
+
 from app.database import Base, get_db
 import app.models  # noqa: F401
 
 TEST_DB_URL = "sqlite+aiosqlite://"
+
+
+@pytest.fixture(autouse=True)
+def nim_env(monkeypatch):
+    monkeypatch.setenv("NIM_API_KEY", "nvapi-test")
 
 
 @pytest_asyncio.fixture
