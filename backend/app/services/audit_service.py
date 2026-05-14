@@ -13,4 +13,4 @@ async def log_action(
 ) -> None:
     entry = AuditLog(user_id=user_id, action=action, resource=resource, detail=detail, ip_address=ip)
     db.add(entry)
-    await db.commit()
+    await db.flush()

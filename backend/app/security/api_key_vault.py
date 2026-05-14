@@ -4,13 +4,9 @@ from cryptography.fernet import Fernet
 
 from app.config import settings
 
-_DEV_FERNET_KEY = Fernet.generate_key()
-
 
 def _fernet() -> Fernet:
     key = settings.NIM_API_KEY_ENCRYPTION_KEY
-    if not key:
-        return Fernet(_DEV_FERNET_KEY)
     return Fernet(key.encode() if isinstance(key, str) else key)
 
 
