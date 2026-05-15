@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
@@ -27,7 +27,9 @@ async def register(body: LoginRequest, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == body.email))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
-    user = User(email=body.email, hashed_password=hash_password(body.password), is_owner=False)
+    count = await db.scalar(select(func.count()).select_from(User))
+    is_owner = count == 0
+    user = User(email=body.email, hashed_password=hash_password(body.password), is_owner=is_owner)
     db.add(user)
     await db.commit()
     await db.refresh(user)
